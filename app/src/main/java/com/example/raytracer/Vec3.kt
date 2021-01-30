@@ -50,20 +50,20 @@ data class Vec3(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) {
         this.z -= v.z
     }
 
-    operator fun times(v: Double) = Vec3(x * v, x * y, x * z)
-    operator fun times(v: Vec3) = Vec3(x * v.x, x * v.y, x * v.z)
+    operator fun times(v: Double) = Vec3(x * v, y * v, z * v)
+    operator fun times(v: Vec3) = Vec3(x * v.x, y * v.y, z * v.z)
 
     operator fun timesAssign(v: Double) {
         this.x *= v
         this.y *= v
-        this.z *= z
+        this.z *= v
     }
 
-    operator fun div(v: Double) = Vec3(x / v, x / y, x / z)
+    operator fun div(v: Double) = Vec3(x / v, y / v, z / v)
     operator fun divAssign(v: Double) {
         this.x /= v
         this.y /= v
-        this.z /= z
+        this.z /= v
     }
 
     fun length(): Double {
@@ -78,7 +78,7 @@ data class Vec3(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) {
 fun dot(u: Vec3, v: Vec3): Double {
     return u.x * v.x +
             u.y * v.y +
-            u.z * u.z
+            u.z * v.z
 }
 
 fun cross(u: Vec3, v: Vec3): Vec3 {
