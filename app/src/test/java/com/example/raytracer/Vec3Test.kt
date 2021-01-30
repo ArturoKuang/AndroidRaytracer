@@ -3,6 +3,7 @@ package com.example.raytracer
 import org.junit.Test
 
 import org.junit.Assert.*
+import kotlin.math.sqrt
 
 private const val DELTA: Double = 1e-15
 
@@ -72,5 +73,14 @@ class Vec3Test {
         val expected = Vec3(4.0, 2.0, -4.0)
 
         assertEquals(expected, cross(a, b))
+    }
+
+    @Test
+    fun unit() {
+        val a = Vec3(1.0, 1.0, 1.0)
+        val x: Double = 1.0 / sqrt(3.0)
+        val expected = Vec3(x, x, x)
+
+        assertEquals(unitVector(a), expected)
     }
 }
