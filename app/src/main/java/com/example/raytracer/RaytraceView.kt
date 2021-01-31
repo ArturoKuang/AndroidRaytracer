@@ -32,43 +32,36 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
             vertical / 2.0f -
             Vec3(.0f, .0f, focalLength)
 
+    private val world = HittableList()
 
-    private fun rayColor(r: Ray): Color3 {
-        var t: Float = hitSphere(Point3(.0f, .0f, -1.0f), 0.5f, r)
-        if(t > 0.0) {
-            var n: Vec3 = unitVector(r.at(t) - Vec3(0.0f, 0.0f, -1.0f))
-            n = Vec3(n.x, -n.y, n.z)
-            return Color3(n.x+1, n.y+1, n.z+1)*0.5f
+
+    private fun rayColor(r: Ray, aWorld: Hittable): Color3 {
+        val worldHit = aWorld.hit(r, 0.0f, infinity)
+        if(worldHit != null) {
+            return (worldHit.normal + Color3(1.0f, 1.0f, 1.0f)) * 0.5f
         }
 
         val unitDirection = unitVector(r.direction)
-        t = .5f*(unitDirection.y + 1.0f)
+        val t = .5f*(unitDirection.y + 1.0f)
         return  Color3(0.0f, 0.0f, 0.0f)*(1.0f-t) + Color3(.5f, .7f, 1.0f)*t
     }
 
-    private fun hitSphere(center: Point3, radius: Float, r: Ray): Float {
-        val oc = r.origin - center
-        val a = r.direction.lengthSqr()
-        val halfB = dot(oc, r.direction)
-        val c = oc.lengthSqr() - radius*radius
-        val discriminant = halfB*halfB - a*c
-
-        return if(discriminant < 0) {
-            -1.0f
-        } else {
-            (-halfB - sqrt(discriminant)) / (a)
-        }
-    }
-
     init {
-        for (row in 0 until bitmap.height) {
+        val sphere1 = Sphere(Point3(.0f, .0f, -1.0f),0.5f)
+        val sphere2 = Sphere(Point3(.0f, -100.5f, -1.0f), 100.0f)
+
+        world.objects.add(sphere1)
+        world.objects.add(sphere2)
+
+        for (row in bitmap.height-1 downTo 0) {
             for (col in 0 until bitmap.width) {
                 val u: Float = col.toFloat() / (bitmap.width-1)
                 val v: Float = row.toFloat() / (bitmap.height-1)
                 val r = Ray(origin, lowerLeftCorner + horizontal*u + vertical*v - origin)
 
-                val pixel = color3ToArgb(rayColor(r))
-                bitmap.setPixel(col, row, pixel)
+                val pixel = color3ToArgb(rayColor(r, world))
+                val newRow = bitmap.height-1-row
+                bitmap.setPixel(col, newRow, pixel)
             }
         }
     }

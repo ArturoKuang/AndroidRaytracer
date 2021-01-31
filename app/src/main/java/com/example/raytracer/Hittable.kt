@@ -16,8 +16,6 @@ data class HitRecord(
     }
 }
 
-data class IsHit(val rec: HitRecord?, val hitAnything: Boolean)
-
 interface Hittable {
-    fun hit(r: Ray, tMin: Float, tMax: Float): IsHit
+    fun hit(r: Ray, tMin: Float, tMax: Float): HitRecord?
 }
