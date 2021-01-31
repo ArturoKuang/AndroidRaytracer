@@ -4,8 +4,8 @@ data class HitRecord(
     var p: Point3,
     var normal: Vec3,
     var t: Float,
-    var frontFace: Boolean
 ) {
+    private var frontFace: Boolean = false
     fun setFaceNormal(r: Ray, outwardNormal: Vec3) {
         frontFace = dot(r.direction, outwardNormal) < 0
         normal = if(frontFace) {
@@ -16,6 +16,8 @@ data class HitRecord(
     }
 }
 
+data class IsHit(val rec: HitRecord?, val hitAnything: Boolean)
+
 interface Hittable {
-    fun hit(r: Ray, tMin: Float, tMax: Float, rec: HitRecord): Boolean
+    fun hit(r: Ray, tMin: Float, tMax: Float): IsHit
 }

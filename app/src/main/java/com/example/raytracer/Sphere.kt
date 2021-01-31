@@ -4,7 +4,7 @@ import kotlin.math.sqrt
 
 class Sphere(val center: Point3, val radius: Float) : Hittable {
 
-    override fun hit(r: Ray, tMin: Float, tMax: Float, rec: HitRecord): Boolean {
+    override fun hit(r: Ray, tMin: Float, tMax: Float): IsHit {
         val oc = r.origin - center
         val a = r.direction.lengthSqr()
         val halfB = dot(oc, r.direction)
@@ -12,7 +12,7 @@ class Sphere(val center: Point3, val radius: Float) : Hittable {
         val discriminant = halfB * halfB - a * c
 
         if (discriminant < 0)
-            return false
+            return IsHit(null, false)
 
         val sqrtd = sqrt(discriminant)
 
@@ -20,14 +20,17 @@ class Sphere(val center: Point3, val radius: Float) : Hittable {
         if (root < tMin || root > tMax) {
             root = (-halfB + sqrtd) / a
             if (root < tMin || root > tMax) {
-                return false
+                return IsHit(null, false)
             }
         }
 
-        rec.t = root
-        rec.p = r.at(rec.t)
-        val outwardNormal: Vec3  = (rec.p - center) / radius
+        val t = root
+        val p = r.at(root)
+        val outwardNormal: Vec3  = (p - center) / radius
+
+        val rec = HitRecord(p, outwardNormal, t)
+
         rec.setFaceNormal(r, outwardNormal)
-        return true
+        return IsHit(rec, true)
     }
 }
