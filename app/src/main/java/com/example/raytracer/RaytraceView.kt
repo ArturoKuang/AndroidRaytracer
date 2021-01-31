@@ -11,57 +11,47 @@ import kotlin.random.Random
 
 class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
+    private val samplesPerPixel = 100
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val backgroundRect = Rect()
-    private val bitmap = Bitmap.createBitmap(1200, 700, Bitmap.Config.ARGB_8888)
-
-    private val aspectRatio: Float = 16.0f / 9.0f
-    private val imageWidth: Int = 400
-    private val imageHeight: Int = (imageWidth / aspectRatio).toInt()
-
-    private val viewportHeight: Float = 2.0f
-    private val viewportWidth: Float = viewportHeight * aspectRatio
-    private val focalLength: Float = 1.0f
-
-    private val origin = Point3(.0f, .0f, .0f)
-    private val horizontal = Vec3(viewportWidth, .0f, .0f)
-    private val vertical = Vec3(.0f, viewportHeight, .0f)
-    private val lowerLeftCorner =
-            origin -
-            horizontal / 2.0f -
-            vertical / 2.0f -
-            Vec3(.0f, .0f, focalLength)
+    private val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
+    private val camera = Camera()
 
     private val world = HittableList()
 
 
     private fun rayColor(r: Ray, aWorld: Hittable): Color3 {
         val worldHit = aWorld.hit(r, 0.0f, infinity)
-        if(worldHit != null) {
+        if (worldHit != null) {
             return (worldHit.normal + Color3(1.0f, 1.0f, 1.0f)) * 0.5f
         }
 
         val unitDirection = unitVector(r.direction)
-        val t = .5f*(unitDirection.y + 1.0f)
-        return  Color3(0.0f, 0.0f, 0.0f)*(1.0f-t) + Color3(.5f, .7f, 1.0f)*t
+        val t = .5f * (unitDirection.y + 1.0f)
+        return Color3(0.0f, 0.0f, 0.0f) * (1.0f - t) + Color3(.5f, .7f, 1.0f) * t
     }
 
     init {
-        val sphere1 = Sphere(Point3(.0f, .0f, -1.0f),0.5f)
+        val sphere1 = Sphere(Point3(.0f, .0f, -1.0f), 0.5f)
         val sphere2 = Sphere(Point3(.0f, -100.5f, -1.0f), 100.0f)
 
         world.objects.add(sphere1)
         world.objects.add(sphere2)
 
-        for (row in bitmap.height-1 downTo 0) {
+        for (row in bitmap.height - 1 downTo 0) {
             for (col in 0 until bitmap.width) {
-                val u: Float = col.toFloat() / (bitmap.width-1)
-                val v: Float = row.toFloat() / (bitmap.height-1)
-                val r = Ray(origin, lowerLeftCorner + horizontal*u + vertical*v - origin)
+                var pixel = Color3()
+                for (s in 0 until samplesPerPixel) {
+                    val u: Float = (col.toFloat() + Random.nextFloat()) / (bitmap.width - 1)
+                    val v: Float = (row.toFloat() + Random.nextFloat()) / (bitmap.height - 1)
 
-                val pixel = color3ToArgb(rayColor(r, world))
-                val newRow = bitmap.height-1-row
-                bitmap.setPixel(col, newRow, pixel)
+                    val ray = camera.getRay(u, v)
+                    pixel = rayColor(ray, world) + pixel
+                }
+
+                val pixelColor = color3ToArgb(pixel, samplesPerPixel.toFloat())
+                val newRow = bitmap.height - 1 - row
+                bitmap.setPixel(col, newRow, pixelColor)
             }
         }
     }
@@ -80,9 +70,9 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
 
         backgroundRect.set(0, 0, width, height)
 
-        //canvas.drawBitmap(bitmap, null, backgroundRect, null)
+        canvas.drawBitmap(bitmap, null, backgroundRect, null)
 
-        canvas.drawBitmap(bitmap, 0.0f, 0.0f, null)
+        //canvas.drawBitmap(bitmap, 0.0f, 0.0f, null)
     }
 
 }

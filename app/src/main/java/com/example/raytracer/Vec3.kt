@@ -1,6 +1,7 @@
 package com.example.raytracer
 
 import android.graphics.Color
+import timber.log.Timber
 import kotlin.math.sqrt
 
 data class Vec3(var x: Float = 0.0f, var y: Float = 0.0f, var z: Float = 0.0f) {
@@ -96,6 +97,17 @@ fun unitVector(v: Vec3): Vec3 {
 
 fun color3ToArgb(color: Color3): Int {
     return Color.argb(1.0f, color.r, color.g, color.b)
+}
+
+fun color3ToArgb(color: Color3, samples: Float): Int {
+    val scale = 1 / samples
+    val r = clamp(color.r * scale, 0f, .999f)
+    val g = clamp(color.g * scale, 0f, .999f)
+    val b = clamp(color.b * scale, 0f, .999f)
+    val colorMultiSample = Color3(r, g, b)
+
+    //Timber.d(colorMultiSample.toString())
+    return Color.argb(1.0f, colorMultiSample.r, colorMultiSample.g, colorMultiSample.b)
 }
 
 typealias   Color3 = Vec3

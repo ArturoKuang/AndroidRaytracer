@@ -1,5 +1,7 @@
 package com.example.raytracer
 
+import kotlin.random.Random
+
 
 class HittableList: Hittable {
 
