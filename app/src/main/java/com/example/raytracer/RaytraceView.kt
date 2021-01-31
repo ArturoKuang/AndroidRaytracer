@@ -16,12 +16,14 @@ class RaytraceView(context: Context, attrs: AttributeSet): View(context, attrs) 
     init {
         for (row in 0 until bitmap.height) {
             for(col in 0 until bitmap.width) {
-                val a = Random.nextInt(255)
-                val r = Random.nextInt(255)
-                val g = Random.nextInt(255)
-                val b = Random.nextInt(255)
+                val a = Random.nextFloat() * 255.0f
+                val r = Random.nextFloat() * 255.0f
+                val g = Random.nextFloat() * 255.0f
+                val b = Random.nextFloat() * 255.0f
 
-                bitmap.setPixel(col, row, Color.argb(a, r, g, b))
+                val pixel = Vec3(r, g, b)
+
+                bitmap.setPixel(col, row, Color.argb(a, pixel.r, pixel.g, pixel.b))
             }
         }
     }
