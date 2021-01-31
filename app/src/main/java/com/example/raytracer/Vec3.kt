@@ -1,5 +1,6 @@
 package com.example.raytracer
 
+import android.graphics.Color
 import kotlin.math.sqrt
 
 data class Vec3(var x: Float = 0.0f, var y: Float = 0.0f, var z: Float = 0.0f) {
@@ -93,5 +94,9 @@ fun unitVector(v: Vec3): Vec3 {
     return v / v.length()
 }
 
-typealias Color3 = Vec3
+fun color3ToArgb(color: Color3): Int {
+    return Color.argb(1.0f, color.r, color.g, color.b)
+}
+
+typealias   Color3 = Vec3
 typealias Point3 = Vec3
