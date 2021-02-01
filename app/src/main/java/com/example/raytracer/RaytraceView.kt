@@ -4,7 +4,10 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import kotlin.math.cos
 import kotlin.random.Random
+
+private const val MAXDEPTHCALLS = 50
 
 class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
@@ -12,7 +15,13 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val backgroundRect = Rect()
     private val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
-    private val camera = Camera()
+    private val camera = Camera(
+        Point3(-2f, 2f, 1f),
+        Point3(0f, 0f, -1f),
+        Point3(0f, 1f, 0f),
+        90f,
+        16f / 9f
+    )
 
     private val world = HittableList()
 
@@ -43,9 +52,9 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
         if (worldHit != null) {
             val incidentRay: IncidentRay? = worldHit.material.scatter(r, worldHit)
 
-            if(incidentRay != null) {
+            if (incidentRay != null) {
                 return incidentRay.attenuation *
-                        rayColor(incidentRay.scattered, world, depth-1)
+                        rayColor(incidentRay.scattered, world, depth - 1)
             }
 
             return Color3(0f, 0f, 0f)
@@ -68,17 +77,14 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
     init {
         val materialGround = Lambertian(Color3(.8f, .8f, 0f))
         val materialCenter = Lambertian(Color3(.1f, .2f, .5f))
-        //val materialCenter = Dielectric(1.5f)
-        //val materialLeft = Metal(Color3(.8f, .8f, .8f), .3f)
         val materialLeft = Dielectric(1.5f)
         val materialRight = Metal(Color3(.8f, .6f, .2f), 0f)
 
 
-        val sphere1 = Sphere(Point3(.0f, -100.5f, -1.0f), 100.0f, materialGround)
-        val sphere2 = Sphere(Point3(.0f, .0f, -1.0f), 0.5f, materialCenter)
-        val sphere3 = Sphere(Point3(-1.0f, .0f, -1.0f), -0.5f, materialLeft)
-        val sphere4 = Sphere(Point3(1.0f, .0f, -1.0f), 0.5f, materialRight)
-        val maxDepth = 50
+        val sphere1 = Sphere(Point3(0f, -100.5f, -1.0f), 100.0f, materialGround)
+        val sphere2 = Sphere(Point3(0f, 0f, -1.0f), 0.5f, materialCenter)
+        val sphere3 = Sphere(Point3(-1.0f, 0f, -1.0f), -.45f, materialLeft)
+        val sphere4 = Sphere(Point3(1.0f, 0f, -1.0f), 0.5f, materialRight)
 
         world.objects.add(sphere1)
         world.objects.add(sphere2)
@@ -93,7 +99,7 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
                     val v: Float = (row.toFloat() + Random.nextFloat()) / (bitmap.height - 1)
 
                     val ray = camera.getRay(u, v)
-                    pixel = rayColor(ray, world, maxDepth) + pixel
+                    pixel = rayColor(ray, world, MAXDEPTHCALLS) + pixel
                 }
 
                 val pixelColor = color3ToArgb(pixel, samplesPerPixel.toFloat())
