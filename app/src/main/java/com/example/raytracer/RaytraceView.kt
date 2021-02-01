@@ -8,7 +8,7 @@ import kotlin.random.Random
 
 class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
-    private val samplesPerPixel = 50
+    private val samplesPerPixel = 1
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val backgroundRect = Rect()
     private val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
@@ -66,12 +66,22 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
     }
 
     init {
-        val sphere1 = Sphere(Point3(.0f, .0f, -1.0f), 0.5f)
-        val sphere2 = Sphere(Point3(.0f, -100.5f, -1.0f), 100.0f)
+        val materialGround = Lambertian(Color3(.8f, .8f, 0f))
+        val materialCenter = Lambertian(Color3(.7f, .3f, .3f))
+        val materialLeft = Metal(Color3(.8f, .8f, .8f), .3f)
+        val materialRight = Metal(Color3(.8f, .6f, .2f), 1f)
+
+
+        val sphere1 = Sphere(Point3(.0f, -100.5f, -1.0f), 100.0f, materialGround)
+        val sphere2 = Sphere(Point3(.0f, .0f, -1.0f), 0.5f, materialCenter)
+        val sphere3 = Sphere(Point3(-1.0f, .0f, -1.0f), 0.5f, materialLeft)
+        val sphere4 = Sphere(Point3(1.0f, .0f, -1.0f), 0.5f, materialRight)
         val maxDepth = 50
 
         world.objects.add(sphere1)
         world.objects.add(sphere2)
+        world.objects.add(sphere3)
+        world.objects.add(sphere4)
 
         for (row in bitmap.height - 1 downTo 0) {
             for (col in 0 until bitmap.width) {
@@ -81,7 +91,7 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
                     val v: Float = (row.toFloat() + Random.nextFloat()) / (bitmap.height - 1)
 
                     val ray = camera.getRay(u, v)
-                    pixel = rayColor(ray, world, 50) + pixel
+                    pixel = rayColor(ray, world, maxDepth) + pixel
                 }
 
                 val pixelColor = color3ToArgb(pixel, samplesPerPixel.toFloat())
