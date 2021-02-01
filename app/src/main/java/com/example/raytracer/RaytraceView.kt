@@ -56,25 +56,27 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
         return Color3(0.0f, 0.0f, 0.0f) * (1.0f - t) + Color3(.5f, .7f, 1.0f) * t
     }
 
-    private fun randomInHemisphere(normal: Vec3): Vec3 {
-        val inUnitSphere = randomInUnitSphere()
-        return if (dot(inUnitSphere, normal) > 0f) {
-            inUnitSphere
-        } else {
-            inUnitSphere * -1f
-        }
-    }
+//    private fun randomInHemisphere(normal: Vec3): Vec3 {
+//        val inUnitSphere = randomInUnitSphere()
+//        return if (dot(inUnitSphere, normal) > 0f) {
+//            inUnitSphere
+//        } else {
+//            inUnitSphere * -1f
+//        }
+//    }
 
     init {
         val materialGround = Lambertian(Color3(.8f, .8f, 0f))
-        val materialCenter = Lambertian(Color3(.7f, .3f, .3f))
-        val materialLeft = Metal(Color3(.8f, .8f, .8f), .3f)
-        val materialRight = Metal(Color3(.8f, .6f, .2f), 1f)
+        val materialCenter = Lambertian(Color3(.1f, .2f, .5f))
+        //val materialCenter = Dielectric(1.5f)
+        //val materialLeft = Metal(Color3(.8f, .8f, .8f), .3f)
+        val materialLeft = Dielectric(1.5f)
+        val materialRight = Metal(Color3(.8f, .6f, .2f), 0f)
 
 
         val sphere1 = Sphere(Point3(.0f, -100.5f, -1.0f), 100.0f, materialGround)
         val sphere2 = Sphere(Point3(.0f, .0f, -1.0f), 0.5f, materialCenter)
-        val sphere3 = Sphere(Point3(-1.0f, .0f, -1.0f), 0.5f, materialLeft)
+        val sphere3 = Sphere(Point3(-1.0f, .0f, -1.0f), -0.5f, materialLeft)
         val sphere4 = Sphere(Point3(1.0f, .0f, -1.0f), 0.5f, materialRight)
         val maxDepth = 50
 

@@ -6,7 +6,7 @@ data class HitRecord(
     var t: Float,
     var material: Material
 ) {
-    private var frontFace: Boolean = false
+    var frontFace: Boolean = false
     fun setFaceNormal(r: Ray, outwardNormal: Vec3) {
         frontFace = dot(r.direction, outwardNormal) < 0
         normal = if(frontFace) {

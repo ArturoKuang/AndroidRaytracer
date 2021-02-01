@@ -1,9 +1,10 @@
 package com.example.raytracer
 
 import android.graphics.Color
-import timber.log.Timber
+import kotlin.math.abs
 import kotlin.math.sqrt
 import kotlin.random.Random
+import kotlin.math.min
 
 data class Vec3(var x: Float = 0.0f, var y: Float = 0.0f, var z: Float = 0.0f) {
     inline var r: Float
@@ -84,7 +85,14 @@ data class Vec3(var x: Float = 0.0f, var y: Float = 0.0f, var z: Float = 0.0f) {
 }
 
 fun reflect(v: Vec3, n: Vec3): Vec3 {
-    return v - n*2f*dot(v,n)
+    return v - n * 2f * dot(v, n)
+}
+
+fun refract(uv: Vec3, n: Vec3, taiOverTat: Float): Vec3 {
+    val cosTheta = min(dot(uv * -1f, n), 1f)
+    val perp: Vec3 = (uv + n * cosTheta) * taiOverTat
+    val parallel: Vec3 = n * -sqrt(abs(1f - perp.lengthSqr()))
+    return perp + parallel
 }
 
 fun randomUnitVector(): Vec3 {
@@ -92,9 +100,9 @@ fun randomUnitVector(): Vec3 {
 }
 
 fun randomInUnitSphere(): Vec3 {
-    while(true) {
+    while (true) {
         val p = random(-1f, 1f)
-        if(p.lengthSqr() >= 1)
+        if (p.lengthSqr() >= 1)
             continue
         return p
     }

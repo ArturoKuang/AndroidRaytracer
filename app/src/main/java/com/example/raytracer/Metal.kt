@@ -1,5 +1,7 @@
 package com.example.raytracer
 
+import kotlin.math.pow
+
 class Metal(val albedo: Color3, var fuzz: Float): Material {
 
     init {
