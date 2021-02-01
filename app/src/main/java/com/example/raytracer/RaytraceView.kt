@@ -15,12 +15,21 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val backgroundRect = Rect()
     private val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
+
+    private val lookFrom = Point3(3f, 3f, 2f)
+    private val lookAt = Point3(0f, 0f, -1f)
+    private val up = Point3(0f, 1f, 0f)
+    private val distToFocus = (lookFrom - lookAt).length()
+    private val aperture = 2f
+
     private val camera = Camera(
-        Point3(-2f, 2f, 1f),
-        Point3(0f, 0f, -1f),
-        Point3(0f, 1f, 0f),
-        90f,
-        16f / 9f
+        lookFrom,
+        lookAt,
+        up,
+        20f,
+        16f / 9f,
+        aperture,
+        distToFocus
     )
 
     private val world = HittableList()

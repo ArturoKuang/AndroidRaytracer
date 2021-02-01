@@ -99,6 +99,17 @@ fun randomUnitVector(): Vec3 {
     return unitVector(randomInUnitSphere())
 }
 
+// disk is constrained to x,y
+fun randomInUnitDisk(): Vec3 {
+    while (true) {
+        val p = Vec3(Random.nextFloat(-1f, 1f), Random.nextFloat(-1f, 1f), 0f)
+        if(p.lengthSqr() >= 1)
+            continue
+
+        return p
+    }
+}
+
 fun randomInUnitSphere(): Vec3 {
     while (true) {
         val p = random(-1f, 1f)
