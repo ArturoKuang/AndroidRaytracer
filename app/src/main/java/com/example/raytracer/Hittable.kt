@@ -4,6 +4,7 @@ data class HitRecord(
     var p: Point3,
     var normal: Vec3,
     var t: Float,
+    var material: Material
 ) {
     private var frontFace: Boolean = false
     fun setFaceNormal(r: Ray, outwardNormal: Vec3) {

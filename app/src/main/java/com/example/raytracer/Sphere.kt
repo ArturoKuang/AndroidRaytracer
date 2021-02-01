@@ -2,7 +2,7 @@ package com.example.raytracer
 
 import kotlin.math.sqrt
 
-class Sphere(val center: Point3, val radius: Float) : Hittable {
+class Sphere(val center: Point3, val radius: Float, val material: Material) : Hittable {
 
     override fun hit(r: Ray, tMin: Float, tMax: Float): HitRecord? {
         val oc = r.origin - center
@@ -28,7 +28,7 @@ class Sphere(val center: Point3, val radius: Float) : Hittable {
         val p = r.at(root)
         val outwardNormal: Vec3  = (p - center) / radius
 
-        val rec = HitRecord(p, outwardNormal, t)
+        val rec = HitRecord(p, outwardNormal, t, material)
 
         rec.setFaceNormal(r, outwardNormal)
         return rec

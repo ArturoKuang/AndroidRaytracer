@@ -11,7 +11,7 @@ import kotlin.random.Random
 
 class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
-    private val samplesPerPixel = 100
+    private val samplesPerPixel = 50
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val backgroundRect = Rect()
     private val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
@@ -20,10 +20,16 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
     private val world = HittableList()
 
 
-    private fun rayColor(r: Ray, aWorld: Hittable): Color3 {
-        val worldHit = aWorld.hit(r, 0.0f, infinity)
+    private fun rayColor(r: Ray, aWorld: Hittable, depth: Int): Color3 {
+        if (depth <= 0) {
+            return Color3()
+        }
+
+        val worldHit = aWorld.hit(r, 0.001f, infinity)
         if (worldHit != null) {
-            return (worldHit.normal + Color3(1.0f, 1.0f, 1.0f)) * 0.5f
+            //val target: Point3 = worldHit.p + worldHit.normal + randomUnitVector()
+            val target: Point3 = worldHit.p + randomInHemisphere(worldHit.normal)
+            return rayColor((Ray(worldHit.p, target - worldHit.p)), world, depth - 1) * .5f
         }
 
         val unitDirection = unitVector(r.direction)
@@ -31,9 +37,19 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
         return Color3(0.0f, 0.0f, 0.0f) * (1.0f - t) + Color3(.5f, .7f, 1.0f) * t
     }
 
+    private fun randomInHemisphere(normal: Vec3): Vec3 {
+        val inUnitSphere = randomInUnitSphere()
+        return if (dot(inUnitSphere, normal) > 0f) {
+            inUnitSphere
+        } else {
+            inUnitSphere * -1f
+        }
+    }
+
     init {
         val sphere1 = Sphere(Point3(.0f, .0f, -1.0f), 0.5f)
         val sphere2 = Sphere(Point3(.0f, -100.5f, -1.0f), 100.0f)
+        val maxDepth = 50
 
         world.objects.add(sphere1)
         world.objects.add(sphere2)
@@ -46,7 +62,7 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
                     val v: Float = (row.toFloat() + Random.nextFloat()) / (bitmap.height - 1)
 
                     val ray = camera.getRay(u, v)
-                    pixel = rayColor(ray, world) + pixel
+                    pixel = rayColor(ray, world, 50) + pixel
                 }
 
                 val pixelColor = color3ToArgb(pixel, samplesPerPixel.toFloat())
@@ -68,9 +84,9 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        backgroundRect.set(0, 0, width, height)
+        backgroundRect.set(0, 0, width, height / 2)
 
-        canvas.drawBitmap(bitmap, null, backgroundRect, null)
+        canvas.drawBitmap(bitmap, null, backgroundRect, paint)
 
         //canvas.drawBitmap(bitmap, 0.0f, 0.0f, null)
     }

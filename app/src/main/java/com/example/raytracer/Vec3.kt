@@ -3,6 +3,7 @@ package com.example.raytracer
 import android.graphics.Color
 import timber.log.Timber
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 data class Vec3(var x: Float = 0.0f, var y: Float = 0.0f, var z: Float = 0.0f) {
     inline var r: Float
@@ -75,6 +76,36 @@ data class Vec3(var x: Float = 0.0f, var y: Float = 0.0f, var z: Float = 0.0f) {
     fun lengthSqr(): Float {
         return x * x + y * y + z * z
     }
+
+    fun nearZero(): Boolean {
+        val s = 1e-8f
+        return this.x < s && this.y < s && this.z < 0
+    }
+}
+
+fun randomUnitVector(): Vec3 {
+    return unitVector(randomInUnitSphere())
+}
+
+fun randomInUnitSphere(): Vec3 {
+    while(true) {
+        val p = random(-1f, 1f)
+        if(p.lengthSqr() >= 1)
+            continue
+        return p
+    }
+}
+
+fun random(): Vec3 {
+    return Vec3(Random.nextFloat(), Random.nextFloat(), Random.nextFloat())
+}
+
+fun random(min: Float, max: Float): Vec3 {
+    return Vec3(
+        Random.nextFloat(min, max),
+        Random.nextFloat(min, max),
+        Random.nextFloat(min, max)
+    )
 }
 
 fun dot(u: Vec3, v: Vec3): Float {
@@ -101,9 +132,10 @@ fun color3ToArgb(color: Color3): Int {
 
 fun color3ToArgb(color: Color3, samples: Float): Int {
     val scale = 1 / samples
-    val r = clamp(color.r * scale, 0f, .999f)
-    val g = clamp(color.g * scale, 0f, .999f)
-    val b = clamp(color.b * scale, 0f, .999f)
+
+    val r = sqrt(clamp(color.r * scale, 0f, .999f))
+    val g = sqrt(clamp(color.g * scale, 0f, .999f))
+    val b = sqrt(clamp(color.b * scale, 0f, .999f))
     val colorMultiSample = Color3(r, g, b)
 
     //Timber.d(colorMultiSample.toString())
