@@ -83,6 +83,10 @@ data class Vec3(var x: Float = 0.0f, var y: Float = 0.0f, var z: Float = 0.0f) {
     }
 }
 
+fun reflect(v: Vec3, n: Vec3): Vec3 {
+    return v - n*2f*dot(v,n)
+}
+
 fun randomUnitVector(): Vec3 {
     return unitVector(randomInUnitSphere())
 }

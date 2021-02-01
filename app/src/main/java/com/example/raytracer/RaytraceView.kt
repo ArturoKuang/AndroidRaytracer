@@ -3,10 +3,7 @@ package com.example.raytracer
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
-import timber.log.Timber
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs) {
@@ -20,6 +17,23 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
     private val world = HittableList()
 
 
+//    private fun rayColor(r: Ray, aWorld: Hittable, depth: Int): Color3 {
+//        if (depth <= 0) {
+//            return Color3()
+//        }
+//
+//        val worldHit = aWorld.hit(r, 0.001f, infinity)
+//        if (worldHit != null) {
+//            //val target: Point3 = worldHit.p + worldHit.normal + randomUnitVector()
+//            val target: Point3 = worldHit.p + randomInHemisphere(worldHit.normal)
+//            return rayColor((Ray(worldHit.p, target - worldHit.p)), world, depth - 1) * .5f
+//        }
+//
+//        val unitDirection = unitVector(r.direction)
+//        val t = .5f * (unitDirection.y + 1.0f)
+//        return Color3(0.0f, 0.0f, 0.0f) * (1.0f - t) + Color3(.5f, .7f, 1.0f) * t
+//    }
+
     private fun rayColor(r: Ray, aWorld: Hittable, depth: Int): Color3 {
         if (depth <= 0) {
             return Color3()
@@ -27,9 +41,14 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
 
         val worldHit = aWorld.hit(r, 0.001f, infinity)
         if (worldHit != null) {
-            //val target: Point3 = worldHit.p + worldHit.normal + randomUnitVector()
-            val target: Point3 = worldHit.p + randomInHemisphere(worldHit.normal)
-            return rayColor((Ray(worldHit.p, target - worldHit.p)), world, depth - 1) * .5f
+            val incidentRay: IncidentRay? = worldHit.material.scatter(r, worldHit)
+
+            if(incidentRay != null) {
+                return incidentRay.attenuation *
+                        rayColor(incidentRay.scattered, world, depth-1)
+            }
+
+            return Color3(0f, 0f, 0f)
         }
 
         val unitDirection = unitVector(r.direction)

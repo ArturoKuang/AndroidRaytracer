@@ -1,6 +1,6 @@
 package com.example.raytracer
 
-class IncidentRay(attenuation: Color3, scattered: Ray)
+class IncidentRay(val attenuation: Color3, val scattered: Ray)
 
 interface Material {
     fun scatter(rIn: Ray, rec: HitRecord): IncidentRay?
