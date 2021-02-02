@@ -11,46 +11,39 @@ private const val MAXDEPTHCALLS = 50
 
 class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
-    private val samplesPerPixel = 1
+    private val samplesPerPixel = 50
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val backgroundRect = Rect()
-    private val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
 
-    private val lookFrom = Point3(3f, 3f, 2f)
-    private val lookAt = Point3(0f, 0f, -1f)
+    private val lookFrom = Point3(13f, 2f, 3f)
+    private val lookAt = Point3(0f, 0f, 0f)
     private val up = Point3(0f, 1f, 0f)
-    private val distToFocus = (lookFrom - lookAt).length()
-    private val aperture = 2f
+
+    //private val distToFocus = (lookFrom - lookAt).length()
+    private val distToFocus = 10f
+    private val aperture = 0.1f
+    private val aspectRatio = 3f / 2f
+    private val fov = 20f
 
     private val camera = Camera(
         lookFrom,
         lookAt,
         up,
-        20f,
-        16f / 9f,
+        fov,
+        aspectRatio,
         aperture,
         distToFocus
     )
 
+    private val imageWidth: Int = 1250
+    private val imageHeight: Int = (imageWidth / aspectRatio).toInt()
+
     private val world = HittableList()
-
-
-//    private fun rayColor(r: Ray, aWorld: Hittable, depth: Int): Color3 {
-//        if (depth <= 0) {
-//            return Color3()
-//        }
-//
-//        val worldHit = aWorld.hit(r, 0.001f, infinity)
-//        if (worldHit != null) {
-//            //val target: Point3 = worldHit.p + worldHit.normal + randomUnitVector()
-//            val target: Point3 = worldHit.p + randomInHemisphere(worldHit.normal)
-//            return rayColor((Ray(worldHit.p, target - worldHit.p)), world, depth - 1) * .5f
-//        }
-//
-//        val unitDirection = unitVector(r.direction)
-//        val t = .5f * (unitDirection.y + 1.0f)
-//        return Color3(0.0f, 0.0f, 0.0f) * (1.0f - t) + Color3(.5f, .7f, 1.0f) * t
-//    }
+    private val bitmap = Bitmap.createBitmap(
+        imageWidth,
+        imageHeight,
+        Bitmap.Config.ARGB_8888
+    )
 
     private fun rayColor(r: Ray, aWorld: Hittable, depth: Int): Color3 {
         if (depth <= 0) {
@@ -74,31 +67,24 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
         return Color3(0.0f, 0.0f, 0.0f) * (1.0f - t) + Color3(.5f, .7f, 1.0f) * t
     }
 
-//    private fun randomInHemisphere(normal: Vec3): Vec3 {
-//        val inUnitSphere = randomInUnitSphere()
-//        return if (dot(inUnitSphere, normal) > 0f) {
-//            inUnitSphere
-//        } else {
-//            inUnitSphere * -1f
-//        }
-//    }
-
     init {
-        val materialGround = Lambertian(Color3(.8f, .8f, 0f))
-        val materialCenter = Lambertian(Color3(.1f, .2f, .5f))
-        val materialLeft = Dielectric(1.5f)
-        val materialRight = Metal(Color3(.8f, .6f, .2f), 0f)
+//        val materialGround = Lambertian(Color3(.8f, .8f, 0f))
+//        val materialCenter = Lambertian(Color3(.1f, .2f, .5f))
+//        val materialLeft = Dielectric(1.5f)
+//        val materialRight = Metal(Color3(.8f, .6f, .2f), 0f)
+//
+//
+//        val sphere1 = Sphere(Point3(0f, -100.5f, -1.0f), 100.0f, materialGround)
+//        val sphere2 = Sphere(Point3(0f, 0f, -1.0f), 0.5f, materialCenter)
+//        val sphere3 = Sphere(Point3(-1.0f, 0f, -1.0f), -.45f, materialLeft)
+//        val sphere4 = Sphere(Point3(1.0f, 0f, -1.0f), 0.5f, materialRight)
+//
+//        world.objects.add(sphere1)
+//        world.objects.add(sphere2)
+//        world.objects.add(sphere3)
+//        world.objects.add(sphere4)
 
-
-        val sphere1 = Sphere(Point3(0f, -100.5f, -1.0f), 100.0f, materialGround)
-        val sphere2 = Sphere(Point3(0f, 0f, -1.0f), 0.5f, materialCenter)
-        val sphere3 = Sphere(Point3(-1.0f, 0f, -1.0f), -.45f, materialLeft)
-        val sphere4 = Sphere(Point3(1.0f, 0f, -1.0f), 0.5f, materialRight)
-
-        world.objects.add(sphere1)
-        world.objects.add(sphere2)
-        world.objects.add(sphere3)
-        world.objects.add(sphere4)
+        randomScene()
 
         for (row in bitmap.height - 1 downTo 0) {
             for (col in 0 until bitmap.width) {
@@ -117,6 +103,57 @@ class RaytraceView(context: Context, attrs: AttributeSet) : View(context, attrs)
             }
         }
     }
+
+    private fun randomScene() {
+        val groundMaterial = Lambertian(Color3(.5f, .5f, .5f))
+        val groundObject = Sphere(Point3(0f, -1000f, 0f), 1000f, groundMaterial)
+        world.objects.add(groundObject)
+
+        for (i in -11 until 11) {
+            for (j in -11 until 11) {
+                val chooseMat = Random.nextFloat()
+                val center =
+                    Point3(i + Random.nextFloat() * .9f, .2f, j + .9f * Random.nextFloat())
+
+                if ((center - Point3(4f, .2f, 0f)).length() > .9f) {
+                    var sphereMaterial: Material?
+
+                    when {
+                        chooseMat < 0.8 -> {
+                            // diffuse
+                            val albedo: Vec3 = random() * random()
+                            sphereMaterial = Lambertian(albedo)
+                            world.objects.add(Sphere(center, .2f, sphereMaterial))
+                        }
+                        chooseMat < 0.95 -> {
+                            // metal
+                            val albedo: Vec3 = random(.5f, 1f)
+                            val fuzz = Random.nextFloat(0f, .5f)
+                            sphereMaterial = Metal(albedo, fuzz)
+                            world.objects.add(Sphere(center, .2f, sphereMaterial))
+                        }
+                        else -> {
+                            // glass
+                            sphereMaterial = Dielectric(1.5f)
+                            world.objects.add(Sphere(center, .2f, sphereMaterial))
+                        }
+                    }
+                }
+            }
+        }
+
+
+        val material1 = Dielectric(1.5f)
+        world.objects.add(Sphere(Point3(0f, 1f, 0f), 1.0f, material1));
+
+        val material2 = Lambertian(Color3(0.4f, 0.2f, 0.1f));
+        world.objects.add(Sphere(Point3(-4f, 1f, 0f), 1.0f, material2));
+
+        val material3 = Metal(Color3(0.7f, 0.6f, 0.5f), 0.0f);
+        world.objects.add(Sphere(Point3(4f, 1f, 0f), 1.0f, material3));
+
+    }
+
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
